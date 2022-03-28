@@ -1,14 +1,14 @@
 import requests
 
-# https://api.github.com/users/Kalandor01/repos
+# https://api.github.com/users/Kalandor01/repos?per_page=100
 # https://api.github.com/repos/Kalandor01/Portfolio/languages
 
 def get_repos(uname="Kalandor01", git_token=""):
     try:
         if git_token!="":
-            r = (requests.get(f"https://api.github.com/users/{uname}/repos", headers={"Authorization": git_token})).text
+            r = (requests.get(f"https://api.github.com/users/{uname}/repos?per_page=100", headers={"Authorization": git_token})).text
         else:
-            r = (requests.get(f"https://api.github.com/users/{uname}/repos")).text
+            r = (requests.get(f"https://api.github.com/users/{uname}/repos?per_page=100")).text
     except:
         input(f"\n{uname} user doesn't exist!")
     else:
