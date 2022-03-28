@@ -4,7 +4,7 @@ import requests
 # https://api.github.com/users/Kalandor01/repos?per_page=100&page=1
 # https://api.github.com/repos/Kalandor01/Portfolio/languages
 
-def get_repos(uname="Kalandor01", git_token=""):
+def get_repos(uname="Kalandor01", get_types=True, git_token=""):
     # get projects
     project_pages = ""
     r = ""
@@ -13,6 +13,7 @@ def get_repos(uname="Kalandor01", git_token=""):
     page_num = 1
     while in_limit == True and r != "[]":
         # get page
+        print(f"Fetching page {page_num}...", end="")
         if git_token!="":
             r = (requests.get(f"https://api.github.com/users/{uname}/repos?per_page=100&page={page_num}", headers={"Authorization": git_token})).text
         else:
@@ -27,22 +28,25 @@ def get_repos(uname="Kalandor01", git_token=""):
                 input(f'\nAPI rate limit exceeded! Couldn\'t get the rest of the pages! (Try again in 1 hour{", or with a git token" if git_token=="" else ""}.)')
                 in_limit = False
             else:
-                project_pages += r
-                print(f"Retrived page {page_num}.")
-                page_num += 1
+                if r != "[]":
+                    project_pages += r
+                    page_num += 1
+                    print("DONE!")
+                else:
+                    print("EMPTY!")
     if user_exists:
         # write out repos
         print(f"\n{uname}'s repos:\n")
         projects = project_pages.split("\",\"full_name\":\"")
         for x in range(len(projects) - 1):
-            project_names = projects[x+1].split("\",\"")[0].split("/")[1]
-            if project_names != uname:
+            project_name = projects[x+1].split("\",\"")[0].split("/")[1]
+            if project_name != uname:
                 # get language
-                if in_limit:
+                if in_limit and get_types:
                     if git_token!="":
-                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_names}/languages", headers={"Authorization": git_token})).text
+                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/languages", headers={"Authorization": git_token})).text
                     else:
-                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_names}/languages")).text
+                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/languages")).text
                     # api limit
                     if rl.find("API rate limit exceeded for") != -1:
                         input(f'\nAPI rate limit exceeded! (Try again in 1 hour{", or with a git token" if git_token=="" else ""}.)\n')
@@ -55,7 +59,10 @@ def get_repos(uname="Kalandor01", git_token=""):
                             lang = "NONE"
                 else:
                     lang = "ERROR"
-                print(f"{project_names}({lang})")
+                if get_types:
+                    print(f"{project_name}({lang})")
+                else:
+                    print(f"{project_name}")
         input("\nDone!")
 
 
@@ -64,6 +71,11 @@ def fetch_repos():
     uname = input("GitHub username: ")
     if uname == "":
         uname = "Kalandor01"
+    type_ans = input("Get project types for each project? (This will take one request per project!)(Y/N): ")
+    if type_ans.upper() == "N":
+        type_get = False
+    else:
+        type_get = True
     # token?
     is_token = input('Use personal git token(Y/N)? (paste token into "token.txt"): ')
     if is_token.upper() == "Y":
@@ -78,9 +90,9 @@ def fetch_repos():
             if len(git_token) < 5:
                 print("The git token is not this short!")
             else:
-                get_repos(uname, git_token)
+                get_repos(uname, type_get, git_token)
     else:
-        get_repos(uname)
+        get_repos(uname, type_get)
 
 
 fetch_repos()
