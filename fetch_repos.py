@@ -11,9 +11,10 @@ def get_repos(uname="Kalandor01", get_types=True, git_token=""):
     user_exists = True
     in_limit = True
     page_num = 1
+    repo_num = 0
     while in_limit == True and r != "[]":
         # get page
-        print(f"Fetching page {page_num}...", end="")
+        print(f"Fetching page {page_num}...", end="", flush=True)
         if git_token!="":
             r = (requests.get(f"https://api.github.com/users/{uname}/repos?per_page=100&page={page_num}", headers={"Authorization": git_token})).text
         else:
@@ -31,12 +32,19 @@ def get_repos(uname="Kalandor01", get_types=True, git_token=""):
                 if r != "[]":
                     project_pages += r
                     page_num += 1
-                    print("DONE!")
+                    # counting
+                    repo_num_page = 0
+                    pn_raw = r.split("\",\"full_name\":\"")
+                    for x in range(len(pn_raw) - 1):
+                        if pn_raw[x+1].split("\",\"")[0].split("/")[1] != uname:
+                            repo_num_page += 1
+                    repo_num += repo_num_page
+                    print(f"DONE! ({repo_num_page})")
                 else:
                     print("EMPTY!")
     if user_exists:
         # write out repos
-        print(f"\n{uname}'s repos:\n")
+        print(f"\n{uname}'s repos ({repo_num}):\n")
         projects = project_pages.split("\",\"full_name\":\"")
         for x in range(len(projects) - 1):
             project_name = projects[x+1].split("\",\"")[0].split("/")[1]
