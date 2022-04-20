@@ -4,7 +4,8 @@ import requests
 # https://api.github.com/users/Kalandor01/repos?per_page=100&page=1
 # https://api.github.com/repos/Kalandor01/Portfolio/languages
 
-def get_repos(uname="Kalandor01", get_types=True, git_token=""):
+def get_repos(uname="Kalandor01", get_commit_num=True, git_token=""):
+    all_commit_num = 0
     # get projects
     project_pages = ""
     r = ""
@@ -50,27 +51,29 @@ def get_repos(uname="Kalandor01", get_types=True, git_token=""):
             project_name = projects[x+1].split("\",\"")[0].split("/")[1]
             if project_name != uname:
                 # get language
-                if in_limit and get_types:
+                p_type = (projects[x+1].split('"language":')[1]).split(",")[0]
+                # get commit number
+                if in_limit and get_commit_num:
                     if git_token!="":
-                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/languages", headers={"Authorization": git_token})).text
+                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/commits", headers={"Authorization": git_token})).text
                     else:
-                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/languages")).text
+                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/commits")).text
                     # api limit
                     if rl.find("API rate limit exceeded for") != -1:
                         input(f'\nAPI rate limit exceeded! (Try again in 1 hour{", or with a git token" if git_token=="" else ""}.)\n')
-                        lang = "ERROR"
+                        comm = "ERROR"
                         in_limit = False
                     else:
-                        try:
-                            lang = rl.split("{\"")[1].split("\":")[0]
-                        except IndexError:
-                            lang = "NONE"
+                        comm = rl.count('"message":')
+                        all_commit_num += comm
                 else:
-                    lang = "ERROR"
-                if get_types:
-                    print(f"{project_name}({lang})")
+                    comm = "ERROR"
+                if get_commit_num:
+                    print(f"{project_name}({p_type}): {comm} commits")
                 else:
-                    print(f"{project_name}")
+                    print(f"{project_name}({p_type})")
+        if get_commit_num:
+            print(f"\nTotal commit number: {all_commit_num}\n")
         input("\nDone!")
 
 
@@ -79,11 +82,11 @@ def fetch_repos():
     uname = input("GitHub username: ")
     if uname == "":
         uname = "Kalandor01"
-    type_ans = input("Get project types for each project? (This will take one request per project!)(Y/N): ")
+    type_ans = input("Get the number of commits for each project? (This will take one request per project!)(Y/N): ")
     if type_ans.upper() == "N":
-        type_get = False
+        type_commits = False
     else:
-        type_get = True
+        type_commits = True
     # token?
     is_token = input('Use personal git token(Y/N)? (paste token into "token.txt"): ')
     if is_token.upper() == "Y":
@@ -98,9 +101,9 @@ def fetch_repos():
             if len(git_token) < 5:
                 print("The git token is not this short!")
             else:
-                get_repos(uname, type_get, git_token)
+                get_repos(uname, type_commits, git_token)
     else:
-        get_repos(uname, type_get)
+        get_repos(uname, type_commits)
 
 
 fetch_repos()
