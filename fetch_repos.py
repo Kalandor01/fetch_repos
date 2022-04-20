@@ -51,7 +51,7 @@ def get_repos(uname="Kalandor01", get_commit_num=True, git_token=""):
             project_name = projects[x+1].split("\",\"")[0].split("/")[1]
             if project_name != uname:
                 # get language
-                p_type = (projects[x+1].split('"language":')[1]).split(",")[0]
+                p_type = ((projects[x+1].split('"language":')[1]).split(",")[0]).replace('"', "")
                 # get commit number
                 if in_limit and get_commit_num:
                     if git_token!="":
