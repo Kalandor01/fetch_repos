@@ -71,7 +71,7 @@ def get_repos(uname="Kalandor01", get_commit_num=True, git_token=""):
                 else:
                     comm = "ERROR"
                 if get_commit_num:
-                    print(f"{project_name}({p_type}): {comm} commits")
+                    print(f"{project_name}({p_type}): {comm} commit{'s' if comm > 1 else ''}")
                 else:
                     print(f"{project_name}({p_type})")
         if get_commit_num:
