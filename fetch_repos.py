@@ -56,17 +56,20 @@ def get_repos(uname="Kalandor01", get_commit_num=True, git_token=""):
                     p_type = "NONE"
                 # get commit number
                 if in_limit and get_commit_num:
-                    if git_token!="":
-                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/commits", headers={"Authorization": git_token})).text
-                    else:
-                        rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/commits")).text
+                    try:
+                        if git_token!="":
+                            rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/commits?per_page=1&page=1", headers={"Authorization": git_token})).headers["link"]
+                        else:
+                            rl = (requests.get(f"https://api.github.com/repos/{uname}/{project_name}/commits?per_page=1&page=1")).headers["link"]
+                    except KeyError:
+                        rl = -1
                     # api limit
-                    if rl.find("API rate limit exceeded for") != -1:
+                    if rl == -1:
                         input(f'\nAPI rate limit exceeded! (Try again in 1 hour{", or with a git token" if git_token=="" else ""}.)\n')
                         comm = "ERROR"
                         in_limit = False
                     else:
-                        comm = rl.count('"message":')
+                        comm = int(((rl.split(";")[1]).split("/commits?per_page=1&page=")[1]).split(">")[0])
                         all_commit_num += comm
                 else:
                     comm = "ERROR"
