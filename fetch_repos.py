@@ -74,7 +74,7 @@ def get_repos(uname="Kalandor01", get_commit_num=True, git_token=""):
                 else:
                     comm = "ERROR"
                 if get_commit_num:
-                    print(f"{project_name}({p_type}): {comm} commit{'s' if comm > 1 else ''}")
+                    print(f"{project_name}({p_type}): {comm} commit{'s' if (comm != 'ERROR' and comm > 1) else ''}")
                 else:
                     print(f"{project_name}({p_type})")
         if get_commit_num:
@@ -99,12 +99,12 @@ def fetch_repos():
         try:
             tok = open("token.txt", "r")
         except FileNotFoundError:
-            print('"token.txt" not dound!')
+            input('"token.txt" not dound!')
         else:
             git_token = tok.readline().replace("\n", "")
             tok.close()
             if len(git_token) < 5:
-                print("The git token is not this short!")
+                input("The git token is not this short!")
             else:
                 get_repos(uname, type_commits, git_token)
     else:
